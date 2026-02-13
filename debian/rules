@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	GENERATE_COMPLETIONS=1 cargo build --release
+
+override_dh_auto_install:
+	$(MAKE) install DESTDIR=debian/snag PREFIX=/usr
+
+override_dh_auto_test:
+	cargo test --release
+
+override_dh_auto_clean:
+	cargo clean

@@ -1,0 +1,9 @@
+/target
+*.swp
+*.swo
+*~
+.env
+*.bk
+*.orig
+.DS_Store
+.claude/

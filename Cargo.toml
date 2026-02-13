@@ -1,0 +1,84 @@
+[package]
+name = "snag"
+version = "0.1.0"
+edition = "2021"
+description = "Terminal-based P2P file sharing"
+license = "MIT OR Apache-2.0"
+authors = ["Snag Contributors"]
+repository = "https://github.com/Abzolute1/snag"
+
+[[bin]]
+name = "snag"
+path = "src/main.rs"
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+
+# QUIC transport
+quinn = "0.11"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+rcgen = "0.13"
+
+# Crypto
+spake2 = "0.4"
+snow = "0.9"
+hkdf = "0.12"
+hmac = "0.12"
+sha2 = "0.10"
+blake3 = ">=1, <1.6"
+chacha20poly1305 = "0.10"
+rand = "0.8"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Compression
+zstd = "0.13"
+
+# NAT traversal
+socket2 = "0.5"
+igd-next = { version = "0.14", features = ["aio_tokio"] }
+
+# Misc
+bytes = "1"
+chrono = "0.4"
+tokio-util = "0.7"
+# Pin transitive deps to avoid edition2024 crates on Rust < 1.85
+time = ">=0.3, <0.3.37"
+instability = ">=0.3, <0.3.8"
+indexmap = ">=2, <2.7"
+
+# Headless mode
+indicatif = "0.17"
+qrcode = { version = "0.14", default-features = false }
+toml = ">=0.8, <0.9"
+tempfile = ">=3, <3.19"
+
+[build-dependencies]
+clap = { version = "4", features = ["derive"] }
+clap_complete = "4"
+
+[dev-dependencies]
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1

@@ -1,0 +1,12 @@
+snag (0.1.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * Terminal-based P2P file sharing with end-to-end encryption.
+  * Interactive TUI dashboard and headless CLI mode.
+  * SPAKE2 + Noise_XXpsk3 + ChaCha20-Poly1305 encryption pipeline.
+  * BLAKE3 integrity verification.
+  * zstd per-chunk compression.
+  * Transfer resume via .part files.
+  * LAN peer discovery via UDP broadcast.
+
+ -- Snag Contributors <snag@example.com>  Wed, 01 Jan 2025 00:00:00 +0000

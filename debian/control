@@ -1,0 +1,20 @@
+Source: snag
+Section: net
+Priority: optional
+Maintainer: Snag Contributors <snag@example.com>
+Build-Depends: debhelper-compat (= 13), cargo, rustc (>= 1.70)
+Standards-Version: 4.6.2
+Homepage: https://github.com/Abzolute1/snag
+Rules-Requires-Root: no
+
+Package: snag
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: P2P file sharing from your terminal
+ Snag is a terminal-based peer-to-peer file sharing application.
+ It allows you to send and receive files securely over a network
+ using share codes. No account or server required.
+ .
+ Features include end-to-end encryption (SPAKE2 + Noise + ChaCha20),
+ BLAKE3 integrity verification, zstd compression, transfer resume,
+ and an interactive TUI dashboard.

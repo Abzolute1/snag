@@ -1,0 +1,215 @@
+.TH SNAG 1 "2025-01-01" "snag 0.1.0" "User Commands"
+.SH NAME
+snag \- P2P file sharing from your terminal
+.SH SYNOPSIS
+.B snag
+.RI [ command ]
+.RI [ options ]
+.SH DESCRIPTION
+.B snag
+is a terminal-based peer-to-peer file sharing application.
+It allows you to send and receive files securely over a network
+using share codes. No account or server required.
+.PP
+When run without arguments,
+.B snag
+opens an interactive TUI dashboard where you can add files, start
+sharing, and receive files from others.
+.SH COMMANDS
+.TP
+.BR send " (" s ") " \fIfiles...\fR
+Share files or directories with someone. Generates a share code that
+the receiver uses to connect. Starts a headless session with progress bars.
+.TP
+.BR receive " (" r ") " \fIcode\fR
+Download files using a share code from the sender. Automatically
+downloads all available files.
+.TP
+.BR discover " (" d ")"
+Scan the local network for peers sharing files via UDP broadcast.
+.TP
+.BR config " (" cfg ")"
+Print the default configuration to stdout. Redirect to
+.I ~/.config/snag/config.toml
+to customize.
+.TP
+.BR relay
+Start a relay server for NAT traversal.
+.TP
+.BR update " (" u ")"
+Update snag to the latest version from GitHub Releases. Unix only.
+.SH OPTIONS
+.SS "send options"
+.TP
+.BR \-p ", " \-\-port " " \fIport\fR
+Port to listen on. Default: 0 (random).
+.TP
+.B \-\-pipe
+Read data from stdin instead of files.
+.TP
+.BR \-\-bind " " \fIaddress\fR
+Bind address for the listener (default: 0.0.0.0).
+.TP
+.B \-\-no\-compress
+Disable zstd compression for chunks.
+.TP
+.BR \-\-timer " " \fIduration\fR
+Auto-stop sharing after a duration (e.g. 30m, 2h, 1h30m, 90s).
+Mutually exclusive with \fB\-\-until\fR.
+.TP
+.BR \-\-until " " \fIHH:MM\fR
+Auto-stop sharing at a specific clock time (24h format).
+Must be in the future. Mutually exclusive with \fB\-\-timer\fR.
+.TP
+.BR \-\-downloads " " \fIN\fR
+Auto-stop after N completed downloads.
+Can be combined with \fB\-\-timer\fR or \fB\-\-until\fR.
+.SS "receive options"
+.TP
+.BR \-o ", " \-\-output " " \fIdir\fR
+Output directory for downloaded files. Default: current directory
+or configured download directory.
+.TP
+.B \-\-pipe
+Write received data to stdout instead of files.
+.TP
+.B \-\-overwrite
+Overwrite existing files instead of renaming.
+.TP
+.BR \-y ", " \-\-yes
+Accept transfer without confirmation prompt.
+.SS "relay options"
+.TP
+.BR \-\-port " " \fIport\fR
+Port to listen on. Default: 19816.
+.TP
+.BR \-\-max\-rooms " " \fIN\fR
+Maximum number of concurrent relay rooms. Default: 1000.
+.SS "update options"
+.TP
+.B \-\-check
+Only check for updates without installing.
+.TP
+.B \-\-force
+Force reinstall even if already up to date.
+.SS "discover options"
+.TP
+.BR \-t ", " \-\-timeout " " \fIseconds\fR
+How long to scan for peers. Default: 5.
+.SH SHARE CODES
+Share codes look like:
+.B fox-ram-log-K7XM9PR2
+.PP
+The first three words are used for authentication (SPAKE2).
+The final segment is the sender's encrypted address.
+Without the words, the address cannot be decoded.
+.PP
+The number of words can be configured (3-5) via
+.I security.code_words
+in the configuration file.
+.SH SECURITY
+.B snag
+uses a layered encryption model:
+.TP
+.B SPAKE2
+Password-authenticated key exchange from the share code words.
+An attacker gets only 1 guess per MITM attempt.
+.TP
+.B Noise_XXpsk3
+Forward-secret channel with ephemeral Diffie-Hellman keys,
+bound to the SPAKE2-derived PSK.
+.TP
+.B ChaCha20-Poly1305
+Bulk data encryption for file chunks, bypassing the 64KB Noise
+frame limit.
+.TP
+.B BLAKE3
+Per-chunk and per-file integrity verification.
+.SH NAT TRAVERSAL
+When sending,
+.B snag
+tries these methods in order to make you reachable:
+.TP
+.B 1. UPnP IGD
+Asks your router to open a port mapping. Works on most home routers.
+.TP
+.B 2. NAT-PMP
+Alternative port mapping protocol (Apple routers, pfSense).
+.TP
+.B 3. STUN
+Discovers your public IP by querying external STUN servers.
+The servers contacted are configurable via
+.IR network.stun_servers .
+Set to an empty list to disable.
+.TP
+.B 4. LAN fallback
+Uses your local address. Only works on the same network.
+.PP
+When receiving,
+.B snag
+tries direct connection first, then hole punching, then port
+prediction for symmetric NATs. A relay server is used only as a
+last resort if the share code includes one.
+.SH FILES
+.TP
+.I ~/.config/snag/config.toml
+User configuration file.
+.TP
+.I ~/.local/share/snag/state.json
+Persisted state (shared files, transfer history).
+.SH EXAMPLES
+Share a file:
+.PP
+.RS
+.nf
+$ snag send report.pdf
+.fi
+.RE
+.PP
+Receive files using a share code:
+.PP
+.RS
+.nf
+$ snag receive fox-ram-log-K7XM9PR2
+.fi
+.RE
+.PP
+Share multiple files:
+.PP
+.RS
+.nf
+$ snag send photos/ report.pdf data.csv
+.fi
+.RE
+.PP
+Pipe data through snag:
+.PP
+.RS
+.nf
+$ tar czf - mydir/ | snag send --pipe
+$ snag receive fox-ram-log-K7XM9PR2 --pipe | tar xzf -
+.fi
+.RE
+.PP
+Discover peers on your network:
+.PP
+.RS
+.nf
+$ snag discover
+.fi
+.RE
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Error (connection failed, invalid code, etc).
+.SH AUTHORS
+Snag Contributors
+.SH LICENSE
+MIT OR Apache-2.0
+.SH SEE ALSO
+.BR scp (1),
+.BR rsync (1),
+.BR magic-wormhole (1)
